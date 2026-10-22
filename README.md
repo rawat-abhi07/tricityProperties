@@ -72,10 +72,12 @@ Or install them individually:
 # Backend
 cd backend
 npm install
+npm run dev:backend
 
 # Frontend
 cd ../frontend
 npm install
+npm run dev:frontend
 ```
 
 ---
