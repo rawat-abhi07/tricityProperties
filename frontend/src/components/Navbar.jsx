@@ -127,6 +127,14 @@ export default function Navbar({
               <span className="phone-text">0172-400-8800</span>
             </a>
 
+            {/* Add Property Button */}
+            <button
+              className="post-property-btn"
+              onClick={() => handleNavClick('add')}
+            >
+              + Add Property
+            </button>
+
             {/* Mobile Menu Hamburger */}
             <button
               className="mobile-menu-toggle"
@@ -179,6 +187,12 @@ export default function Navbar({
               onClick={() => handleNavClick('principles')}
             >
               Product Principles & Trust
+            </button>
+            <button
+              className={`mobile-link ${activeTab === 'add' ? 'active' : ''}`}
+              onClick={() => handleNavClick('add')}
+            >
+              + Add Property
             </button>
 
 

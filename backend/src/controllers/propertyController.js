@@ -204,7 +204,7 @@ export const getPropertyById = (req, res) => {
 // @desc    Create new property (User/Seller listing)
 // @route   POST /api/properties
 export const createProperty = (req, res) => {
-  const { title, price, location, city, bedrooms, bathrooms, area, type, image, description, bhk, listingSource, possessionStatus } = req.body;
+  const { title, price, location, city, bedrooms, bathrooms, area, type, image, images, description, bhk, listingSource, possessionStatus } = req.body;
 
   if (!title || !price || !location) {
     return res.status(400).json({
@@ -217,6 +217,9 @@ export const createProperty = (req, res) => {
   const formatted = numPrice >= 10000000 
     ? `₹ ${(numPrice / 10000000).toFixed(2)} Cr`
     : `₹ ${(numPrice / 100000).toFixed(1)} Lakhs`;
+
+  const finalImg = image || (images && images[0]) || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80';
+  const finalImages = images && images.length > 0 ? images : [finalImg];
 
   const newProperty = {
     id: String(Date.now()),
@@ -238,7 +241,8 @@ export const createProperty = (req, res) => {
     reraNumber: 'Verified Listing',
     isVerified: true,
     sellerPhone: '+91 98888 XXXXX',
-    image: image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
+    image: finalImg,
+    images: finalImages,
     description: description || 'Verified residential property in prime Tricity location.'
   };
 

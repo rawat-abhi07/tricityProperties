@@ -9,9 +9,24 @@ export default function PropertyCard({
   onOpenLeadModal,
 }) {
   const [showPhone, setShowPhone] = useState(false);
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
+
+  const imagesList =
+    property.images && property.images.length > 0 ? property.images : [property.image];
+  const currentImg = imagesList[activeImgIndex] || property.image;
 
   const handleCallClick = () => {
     setShowPhone(!showPhone);
+  };
+
+  const handlePrevImg = (e) => {
+    e.stopPropagation();
+    setActiveImgIndex((prev) => (prev === 0 ? imagesList.length - 1 : prev - 1));
+  };
+
+  const handleNextImg = (e) => {
+    e.stopPropagation();
+    setActiveImgIndex((prev) => (prev === imagesList.length - 1 ? 0 : prev + 1));
   };
 
   return (
@@ -19,11 +34,36 @@ export default function PropertyCard({
       {/* Image & Overlay Badges */}
       <div className="prop-image-wrap">
         <img
-          src={property.image}
+          src={currentImg}
           alt={property.title}
           className="prop-main-image"
           loading="lazy"
         />
+
+        {/* Carousel controls if multiple pictures exist */}
+        {imagesList.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="card-carousel-btn prev-btn"
+              onClick={handlePrevImg}
+              aria-label="Previous Photo"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="card-carousel-btn next-btn"
+              onClick={handleNextImg}
+              aria-label="Next Photo"
+            >
+              ›
+            </button>
+            <span className="card-photo-count">
+              📷 {activeImgIndex + 1}/{imagesList.length}
+            </span>
+          </>
+        )}
 
         <div className="prop-top-badges">
           <span className="badge-possession">{property.possessionStatus}</span>
@@ -89,7 +129,7 @@ export default function PropertyCard({
         {showPhone && (
           <div className="prop-phone-reveal">
             <span>Direct Seller:</span>
-            <strong>{property.sellerPhone}</strong>
+            <strong>{property.sellerPhone || '+91 98888 XXXXX'}</strong>
           </div>
         )}
 

@@ -22,6 +22,12 @@ export const fallbackProperties = [
     isVerified: true,
     sellerPhone: '+91 98882 14500',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80'
+    ],
     description: 'Corner 3 BHK apartment with modular Italian kitchen, private clubhouse access, 100% power backup, and pristine park view on PR-7 Airport Road.'
   },
   {
@@ -45,6 +51,11 @@ export const fallbackProperties = [
     isVerified: true,
     sellerPhone: '+91 98140 22780',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1000&q=80'
+    ],
     description: 'Exclusive freehold builder floor with dedicated private lift, Italian marble flooring, 2 reserved stilt car parkings, and prime central connectivity.'
   },
   {
@@ -212,6 +223,7 @@ export const createProperty = async (propertyData) => {
       isVerified: true,
       sellerPhone: '+91 98888 XXXXX',
       image: propertyData.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
+      images: propertyData.images && propertyData.images.length > 0 ? propertyData.images : [propertyData.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80'],
     };
     fallbackProperties.unshift(newProp);
     return { success: true, data: newProp };

@@ -1,6 +1,8 @@
 import React from 'react';
 
 export default function Footer({ onCitySelect }) {
+  const cities = ['Chandigarh', 'Mohali', 'Panchkula', 'Zirakpur', 'New Chandigarh'];
+
   return (
     <footer className="site-footer">
       {/* Top Value Banner */}
@@ -56,33 +58,25 @@ export default function Footer({ onCitySelect }) {
             </div>
           </div>
 
-          {/* Col 2: Mohali & Chandigarh Localities */}
+          {/* Col 2: Locations (Same as Header Dropdown) */}
           <div className="footer-col">
-            <h4>Mohali & Chandigarh</h4>
+            <h4>Locations</h4>
             <ul className="footer-links-list">
-              <li><button onClick={() => onCitySelect && onCitySelect('Mohali')}>Sector 82 (Airport Road)</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Mohali')}>Aerocity & IT City Mohali</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Mohali')}>Sector 70 & 71 Mohali</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Chandigarh')}>Sector 34 & 35 Chandigarh</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Chandigarh')}>Sector 8 & 9 (Northern Sectors)</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('New Chandigarh')}>Eco City, New Chandigarh</button></li>
+              {cities.map((city) => (
+                <li key={city}>
+                  <button
+                    type="button"
+                    className="footer-city-link"
+                    onClick={() => onCitySelect && onCitySelect(city)}
+                  >
+                    {city}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Col 3: Panchkula & Zirakpur */}
-          <div className="footer-col">
-            <h4>Panchkula & Zirakpur</h4>
-            <ul className="footer-links-list">
-              <li><button onClick={() => onCitySelect && onCitySelect('Panchkula')}>Sector 20 Panchkula</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Panchkula')}>MDC (Mansadevi Complex)</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Panchkula')}>Sector 4 & 5 Panchkula</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Zirakpur')}>PR7 Airport Ring Road</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Zirakpur')}>VIP Road Zirakpur</button></li>
-              <li><button onClick={() => onCitySelect && onCitySelect('Zirakpur')}>Highland Marg & Patiala Highway</button></li>
-            </ul>
-          </div>
-
-          {/* Col 4: Marketplace Principles */}
+          {/* Col 3: Marketplace Policy */}
           <div className="footer-col">
             <h4>Marketplace Policy</h4>
             <ul className="footer-links-list static-links">
@@ -94,13 +88,6 @@ export default function Footer({ onCitySelect }) {
               <li><span>✓ Data Privacy & Zero Spam</span></li>
             </ul>
           </div>
-        </div>
-
-        {/* Regulatory & Disclaimer note */}
-        <div className="footer-disclaimer-box">
-          <p>
-            <strong>Regulatory & Consumer Transparency:</strong> Tricity Housing acts as an open, verified marketplace connecting buyers with genuine owners, builders, and verified channel partners. All project RERA details (PBRERA & HRERA) are displayed as submitted by listing owners. We advise all buyers to inspect the physical site and title records before transaction.
-          </p>
         </div>
 
         {/* Bottom copyright */}
