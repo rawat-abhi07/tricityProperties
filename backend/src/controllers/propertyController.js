@@ -19,6 +19,7 @@ let properties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-SAS80-PR0641',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98882 14500',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
     description: 'Corner 3 BHK apartment with modular Italian kitchen, private clubhouse access, 100% power backup, and pristine park view on PR-7 Airport Road.'
@@ -42,6 +43,7 @@ let properties = [
     listingSource: 'Direct Owner',
     reraNumber: 'CH-RERA-0082',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98140 22780',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
     description: 'Exclusive freehold builder floor with dedicated private lift, Italian marble flooring, 2 reserved stilt car parkings, and prime central connectivity.'
@@ -65,6 +67,7 @@ let properties = [
     listingSource: 'Verified Developer',
     reraNumber: 'HRERA-PKL-0291',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98765 89012',
     image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
     description: 'Panoramic Shivalik hill views, smart security automation, EV charging bay, infinity pool, and landscaped zen gardens.'
@@ -88,6 +91,7 @@ let properties = [
     listingSource: 'Authorized Partner',
     reraNumber: 'PBRERA-ZRK-1102',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 97791 43210',
     image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80',
     description: 'Well-ventilated north-east facing 2 BHK near international school belt, 15 min drive to Chandigarh airport, with 24/7 security & shopping arcade.'
@@ -111,6 +115,7 @@ let properties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-NCH-0899',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98889 00123',
     image: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1000&q=80',
     description: 'Designer independent Spanish villa with double-height ceiling lounge, private plunge pool, solar backup, and landscaped lawn.'
@@ -134,6 +139,7 @@ let properties = [
     listingSource: 'Direct Owner',
     reraNumber: 'GMADA Approved',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 99155 77665',
     image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
     description: 'GMADA approved north-east facing plot overlooking wide 60 ft road. Clear registry title, immediate registry and construction ready.'
@@ -157,6 +163,7 @@ let properties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-SAS80-PR0782',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98721 55432',
     image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
     description: 'Modern 3 BHK with 3-side open layout, double-glazed windows, dedicated EV parking, Olympic-size pool and sky lounge.'
@@ -180,6 +187,7 @@ let properties = [
     listingSource: 'Direct Owner',
     reraNumber: 'CH-RERA-0114',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98144 33211',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
     description: 'Rare heritage-style modern kothi in Chandigarh’s posh Sector 8. Italian marble, private lift, servant quarters, landscaped lawn and 3-car garage.'
@@ -203,6 +211,7 @@ let properties = [
     listingSource: 'Verified Developer',
     reraNumber: 'HRERA-PKL-0402',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98777 66120',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
     description: 'Low-density 3 BHK builder floor facing reserve forest belt. Private stilt parking, branded fittings, and uninterrupted Shivalik mountain air.'
@@ -226,6 +235,7 @@ let properties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-ZRK-1455',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 99880 12345',
     image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80',
     description: 'Double-height commercial showroom with 25 ft frontage on PR7 200-ft Airport Ring Road. High footfall zone with national retail brands.'
@@ -266,6 +276,11 @@ export const getProperties = (req, res) => {
 
   if (maxPrice) {
     filtered = filtered.filter(p => p.price <= Number(maxPrice));
+  }
+
+  const { status } = req.query;
+  if (status && status !== 'All') {
+    filtered = filtered.filter(p => p.status && p.status.toLowerCase() === status.toLowerCase());
   }
 
   res.status(200).json({
@@ -330,9 +345,10 @@ export const createProperty = (req, res) => {
     type: type || 'Apartment',
     possessionStatus: possessionStatus || 'Ready to Move',
     listingSource: listingSource || 'Direct Owner',
-    reraNumber: 'Verified Listing',
-    isVerified: true,
-    sellerPhone: '+91 98888 XXXXX',
+    reraNumber: req.body.reraNumber || 'Verified Listing',
+    isVerified: req.body.status === 'Approved',
+    status: req.body.status || 'Pending',
+    sellerPhone: req.body.sellerPhone || '+91 98888 XXXXX',
     image: finalImg,
     images: finalImages,
     description: description || 'Verified residential property in prime Tricity location.'
@@ -344,4 +360,55 @@ export const createProperty = (req, res) => {
     success: true,
     data: newProperty,
   });
+};
+
+
+// @desc    Update existing property
+// @route   PUT /api/properties/:id
+export const updateProperty = (req, res) => {
+  const index = properties.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ success: false, message: 'Property not found' });
+  }
+
+  const existing = properties[index];
+  const numPrice = req.body.price ? Number(req.body.price) : existing.price;
+  const formatted = numPrice >= 10000000 
+    ? '₹ ' + (numPrice / 10000000).toFixed(2) + ' Cr'
+    : '₹ ' + (numPrice / 100000).toFixed(1) + ' Lakhs';
+
+  properties[index] = {
+    ...existing,
+    ...req.body,
+    price: numPrice,
+    formattedPrice: formatted,
+    id: existing.id
+  };
+
+  res.status(200).json({ success: true, data: properties[index] });
+};
+
+// @desc    Delete property
+// @route   DELETE /api/properties/:id
+export const deleteProperty = (req, res) => {
+  const index = properties.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ success: false, message: 'Property not found' });
+  }
+
+  const deleted = properties.splice(index, 1);
+  res.status(200).json({ success: true, message: 'Property removed', data: deleted[0] });
+};
+
+// @desc    Update property status
+// @route   PATCH /api/properties/:id/status
+export const updatePropertyStatus = (req, res) => {
+  const { status } = req.body;
+  const property = properties.find(p => p.id === req.params.id);
+  if (!property) {
+    return res.status(404).json({ success: false, message: 'Property not found' });
+  }
+
+  property.status = status || 'Approved';
+  res.status(200).json({ success: true, data: property });
 };

@@ -20,6 +20,7 @@ export const fallbackProperties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-SAS80-PR0641',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98882 14500',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
     images: [
@@ -49,6 +50,7 @@ export const fallbackProperties = [
     listingSource: 'Direct Owner',
     reraNumber: 'CH-RERA-0082',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98140 22780',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
     images: [
@@ -77,6 +79,7 @@ export const fallbackProperties = [
     listingSource: 'Verified Developer',
     reraNumber: 'HRERA-PKL-0291',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98765 89012',
     image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
     description: 'Panoramic Shivalik hill views, smart security automation, EV charging bay, infinity pool, and landscaped zen gardens.'
@@ -100,6 +103,7 @@ export const fallbackProperties = [
     listingSource: 'Authorized Partner',
     reraNumber: 'PBRERA-ZRK-1102',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 97791 43210',
     image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80',
     description: 'Well-ventilated north-east facing 2 BHK near international school belt, 15 min drive to Chandigarh airport, with 24/7 security & shopping arcade.'
@@ -123,6 +127,7 @@ export const fallbackProperties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-NCH-0899',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98889 00123',
     image: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1000&q=80',
     description: 'Designer independent Spanish villa with double-height ceiling lounge, private plunge pool, solar backup, and landscaped lawn.'
@@ -146,6 +151,7 @@ export const fallbackProperties = [
     listingSource: 'Direct Owner',
     reraNumber: 'GMADA Approved',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 99155 77665',
     image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
     description: 'GMADA approved north-east facing plot overlooking wide 60 ft road. Clear registry title, immediate registry and construction ready.'
@@ -169,6 +175,7 @@ export const fallbackProperties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-SAS80-PR0782',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98721 55432',
     image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
     description: 'Modern 3 BHK with 3-side open layout, double-glazed windows, dedicated EV parking, Olympic-size pool and sky lounge.'
@@ -192,6 +199,7 @@ export const fallbackProperties = [
     listingSource: 'Direct Owner',
     reraNumber: 'CH-RERA-0114',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98144 33211',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
     description: 'Rare heritage-style modern kothi in Chandigarh’s posh Sector 8. Italian marble, private lift, servant quarters, landscaped lawn and 3-car garage.'
@@ -215,6 +223,7 @@ export const fallbackProperties = [
     listingSource: 'Verified Developer',
     reraNumber: 'HRERA-PKL-0402',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 98777 66120',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
     description: 'Low-density 3 BHK builder floor facing reserve forest belt. Private stilt parking, branded fittings, and uninterrupted Shivalik mountain air.'
@@ -238,6 +247,7 @@ export const fallbackProperties = [
     listingSource: 'Verified Developer',
     reraNumber: 'PBRERA-ZRK-1455',
     isVerified: true,
+    status: 'Approved',
     sellerPhone: '+91 99880 12345',
     image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80',
     description: 'Double-height commercial showroom with 25 ft frontage on PR7 200-ft Airport Ring Road. High footfall zone with national retail brands.'
@@ -251,14 +261,28 @@ export const fetchProperties = async (filters = {}) => {
     if (filters.city && filters.city !== 'All') params.append('city', filters.city);
     if (filters.location) params.append('location', filters.location);
     if (filters.bhk && filters.bhk !== 'All') params.append('bhk', filters.bhk);
+    params.append('status', 'Approved');
 
     const query = params.toString() ? `?${params.toString()}` : '';
     const res = await fetch(`${API_BASE_URL}/properties${query}`);
     if (!res.ok) throw new Error('Failed to fetch from server');
     return await res.json();
   } catch (err) {
-    console.warn('API fetch failed, falling back to local mock data:', err.message);
-    let filtered = [...fallbackProperties];
+    console.warn('API fetch failed, reading verified listings from sync cache:', err.message);
+    let allProps = [...fallbackProperties];
+    try {
+      const stored = localStorage.getItem('th_admin_properties');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          allProps = parsed;
+        }
+      }
+    } catch {}
+
+    // Show only Approved properties on the public marketplace
+    let filtered = allProps.filter(p => !p.status || p.status === 'Approved');
+
     if (filters.city && filters.city !== 'All') {
       filtered = filtered.filter(p => p.city.toLowerCase() === filters.city.toLowerCase());
     }
@@ -269,7 +293,7 @@ export const fetchProperties = async (filters = {}) => {
       const loc = filters.location.toLowerCase();
       filtered = filtered.filter(p => 
         p.location.toLowerCase().includes(loc) ||
-        p.locality.toLowerCase().includes(loc) ||
+        (p.locality && p.locality.toLowerCase().includes(loc)) ||
         p.title.toLowerCase().includes(loc)
       );
     }
@@ -292,32 +316,73 @@ export const fetchPropertyById = async (id) => {
 };
 
 export const createProperty = async (propertyData) => {
+  const payload = {
+    ...propertyData,
+    status: propertyData.status || 'Pending',
+  };
+
   try {
     const res = await fetch(`${API_BASE_URL}/properties`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(propertyData),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to create property');
     return await res.json();
   } catch (err) {
-    const numPrice = Number(propertyData.price);
+    const numPrice = Number(payload.price);
     const formatted = numPrice >= 10000000 
       ? `₹ ${(numPrice / 10000000).toFixed(2)} Cr`
       : `₹ ${(numPrice / 100000).toFixed(1)} Lakhs`;
 
     const newProp = {
       id: String(Date.now()),
-      ...propertyData,
+      ...payload,
       formattedPrice: formatted,
       pricePerSqFt: 'Market Rate',
-      reraNumber: 'Verified Listing',
-      isVerified: true,
-      sellerPhone: '+91 98888 XXXXX',
-      image: propertyData.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
-      images: propertyData.images && propertyData.images.length > 0 ? propertyData.images : [propertyData.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80'],
+      reraNumber: payload.reraNumber || 'Applied (Pending Verification)',
+      isVerified: false,
+      status: 'Pending',
+      sellerPhone: payload.sellerPhone || '+91 98888 XXXXX',
+      image: payload.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
+      images: payload.images && payload.images.length > 0 ? payload.images : [payload.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80'],
     };
+
+    // Store in admin shared storage so the Admin Panel immediately sees this pending request
+    try {
+      const stored = localStorage.getItem('th_admin_properties');
+      const list = stored ? JSON.parse(stored) : [...fallbackProperties];
+      list.unshift(newProp);
+      localStorage.setItem('th_admin_properties', JSON.stringify(list));
+    } catch {}
+
     fallbackProperties.unshift(newProp);
     return { success: true, data: newProp };
+  }
+};
+
+export const submitLead = async (leadData) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/crm/leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(leadData),
+    });
+    if (!res.ok) throw new Error('Lead submission failed');
+    return await res.json();
+  } catch (err) {
+    const newLead = {
+      id: `lead-${Date.now()}`,
+      ...leadData,
+      createdAt: new Date().toISOString(),
+      status: 'New'
+    };
+    try {
+      const stored = localStorage.getItem('th_admin_leads');
+      const list = stored ? JSON.parse(stored) : [];
+      list.unshift(newLead);
+      localStorage.setItem('th_admin_leads', JSON.stringify(list));
+    } catch {}
+    return { success: true, data: newLead };
   }
 };

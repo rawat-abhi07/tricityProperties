@@ -180,6 +180,7 @@ export default function AddProperty({ onPropertyCreated, onCancel }) {
             : 'Authorized Partner',
         image: primaryCover,
         images: imageList.length > 0 ? imageList : [primaryCover],
+        status: 'Pending',
       };
 
       await onPropertyCreated(submissionPayload);
@@ -267,8 +268,8 @@ export default function AddProperty({ onPropertyCreated, onCancel }) {
               </div>
 
               {success && (
-                <div className="compact-success-alert">
-                  ✅ <strong>Property Listed!</strong> Your property with photos is live on Tricity Housing.
+                <div className="compact-success-alert" style={{ background: '#ecfdf5', border: '1px solid #10b981', color: '#065f46', padding: '1rem', borderRadius: '8px', lineHeight: 1.5 }}>
+                  🛡️ <strong>Listing Submitted for Verification!</strong> Your property has been received and added to the Admin Review Queue. Once approved by our admin team, it will be published live on the marketplace.
                 </div>
               )}
 

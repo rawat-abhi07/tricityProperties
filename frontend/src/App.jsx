@@ -74,6 +74,9 @@ export default function App() {
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (newTab === 'home' || newTab === 'properties') {
+      loadProperties();
+    }
   };
 
   // City change handler
@@ -142,7 +145,9 @@ export default function App() {
     return res;
   };
 
-  const savedPropertiesList = properties.filter((p) => savedPropertyIds.includes(p.id));
+  // Only Approved properties are visible on the buyer marketplace
+  const approvedProperties = properties.filter((p) => !p.status || p.status === 'Approved');
+  const savedPropertiesList = approvedProperties.filter((p) => savedPropertyIds.includes(p.id));
   const comparedIds = comparedProperties.map((p) => p.id);
 
   return (
@@ -170,7 +175,7 @@ export default function App() {
           <>
             {activeTab === 'home' && (
               <Home
-                properties={properties}
+                properties={approvedProperties}
                 selectedCity={selectedCity}
                 onCityChange={handleCityChange}
                 onNavigateToProperties={handleNavigateToExplore}
@@ -184,7 +189,7 @@ export default function App() {
 
             {activeTab === 'properties' && (
               <Properties
-                properties={properties}
+                properties={approvedProperties}
                 initialFilters={exploreFilters}
                 selectedCity={selectedCity}
                 onCityChange={handleCityChange}

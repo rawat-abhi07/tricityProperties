@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { submitLead } from '../services/api';
 
 export default function ContextualLeadModal({ property, mode = 'visit', onClose }) {
   const [name, setName] = useState('');
@@ -9,6 +10,7 @@ export default function ContextualLeadModal({ property, mode = 'visit', onClose 
   const [consent, setConsent] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [bookingRef, setBookingRef] = useState('');
 
   if (!property) return null;
 
@@ -42,7 +44,22 @@ export default function ContextualLeadModal({ property, mode = 'visit', onClose 
     }
 
     setError('');
+    const refNum = `TH-${Math.floor(100000 + Math.random() * 900000)}`;
+    setBookingRef(refNum);
     setSubmitted(true);
+
+    // Stream lead directly to backend and Admin Panel
+    submitLead({
+      name: name.trim(),
+      phone: `+91 ${cleanPhone}`,
+      propertyId: property.id,
+      propertyTitle: property.title,
+      location: property.location,
+      slot: `${selectedDay}, ${selectedTimeSlot}`,
+      needCab,
+      mode: mode || 'visit',
+      bookingRef: refNum,
+    });
   };
 
   return (
@@ -242,7 +259,7 @@ export default function ContextualLeadModal({ property, mode = 'visit', onClose 
             <div className="success-details-card">
               <div className="detail-row">
                 <span className="detail-k">Booking Reference:</span>
-                <span className="detail-v ref-tag">TH-{Math.floor(100000 + Math.random() * 900000)}</span>
+                <span className="detail-v ref-tag">{bookingRef || "TH-839210"}</span>
               </div>
               <div className="detail-row">
                 <span className="detail-k">Property:</span>

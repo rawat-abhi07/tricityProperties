@@ -18,34 +18,44 @@ export default function Home({
   const [propertyFilterTab, setPropertyFilterTab] = useState('all');
   const [bannerSlide, setBannerSlide] = useState(0);
 
-  const bannerProjects = [
-    {
-      presenter: 'HERO HOMES PRESENTS',
-      config: '3 & 4 BHK',
-      tag: 'PREMIUM RESIDENCES',
-      price: '₹1.18 Cr* Onwards',
-      name: 'Leafsong Retreat',
-      subname: 'BY HERO HOMES',
-      location: 'Sector 82, Airport Road, Mohali',
-      tagline: 'LIFE AT EASE • BREATHE BETTER WITH AQI-CONTROLLED HOMES',
-      rera: 'PBRERA-SAS80-PR0641',
-      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      presenter: 'SUSHMA GROUP PRESENTS',
-      config: '3 & 4 BHK',
-      tag: 'ULTRA-LUXURY LIVING',
-      price: '₹1.35 Cr* Onwards',
-      name: 'Belleza Residences',
-      subname: 'PR-7 AIRPORT RING ROAD',
-      location: 'PR-7 Airport Road, Zirakpur',
-      tagline: 'SPANISH ARCHITECTURE • 100% POWER BACKUP & RESORT AMENITIES',
-      rera: 'PBRERA-ZRK-1102',
-      image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-    }
-  ];
+  const [bannerProjects] = useState(() => {
+    try {
+      const stored = localStorage.getItem('th_admin_banners');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const active = parsed.filter((b) => b.isActive !== false);
+        if (active.length > 0) return active;
+      }
+    } catch {}
+    return [
+      {
+        presenter: 'HERO HOMES PRESENTS',
+        config: '3 & 4 BHK',
+        tag: 'PREMIUM RESIDENCES',
+        price: '₹1.18 Cr* Onwards',
+        name: 'Leafsong Retreat',
+        subname: 'BY HERO HOMES',
+        location: 'Sector 82, Airport Road, Mohali',
+        tagline: 'LIFE AT EASE • BREATHE BETTER WITH AQI-CONTROLLED HOMES',
+        rera: 'PBRERA-SAS80-PR0641',
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      },
+      {
+        presenter: 'SUSHMA GROUP PRESENTS',
+        config: '3 & 4 BHK',
+        tag: 'ULTRA-LUXURY LIVING',
+        price: '₹1.35 Cr* Onwards',
+        name: 'Belleza Residences',
+        subname: 'PR-7 AIRPORT RING ROAD',
+        location: 'PR-7 Airport Road, Zirakpur',
+        tagline: 'SPANISH ARCHITECTURE • 100% POWER BACKUP & RESORT AMENITIES',
+        rera: 'PBRERA-ZRK-1102',
+        image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+      }
+    ];
+  });
 
-  const currentBanner = bannerProjects[bannerSlide];
+  const currentBanner = bannerProjects[bannerSlide % bannerProjects.length] || bannerProjects[0];
 
   // Handle Search Submission
   const handleSearchSubmit = (e) => {

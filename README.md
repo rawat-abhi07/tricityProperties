@@ -1,103 +1,104 @@
-# EstateHub - Full-Stack Real Estate Web Application
+# EstateHub & RealtyPro - Full-Stack Real Estate Marketplace & Admin Suite
 
-A full-stack real estate web application built with **React** on the frontend and **Node.js (Express)** on the backend.
+A complete real estate ecosystem built for the **Tricity Market** (Chandigarh, Mohali, Panchkula, Zirakpur, New Chandigarh), featuring:
+1. **Frontend Marketplace (`frontend/`)**: High-trust buyer portal with comparison drawer, contextual site visit lead capture, multi-image listing creator, and locality guides.
+2. **Admin Panel & CRM (`adminPanel/`)**: Dedicated management dashboard embodying modern real estate UX (Home Lengo + RealtyPro styles), featuring dynamic listings inventory with status workflows (Approved, Pending, Sold), Sales Pipeline Kanban board, AI Insights, interactive Page Insights visitor graph, client inquiries, reviews, and messaging.
+3. **Backend REST API (`backend/`)**: Node.js & Express API with full CRUD for property listings, status updates, deals pipeline, and lead capture.
 
 ---
 
 ## 📁 Project Architecture
 
 ```
-realestateWeb/
-├── backend/                     # Node.js & Express REST API
+tricityProperties/
+├── backend/                     # Node.js & Express REST API (Port 5000)
 │   ├── src/
-│   │   ├── config/              # Database connection & configurations
-│   │   │   └── db.js
-│   │   ├── controllers/         # Business logic & request handling
-│   │   │   ├── propertyController.js
-│   │   │   └── userController.js
-│   │   ├── middleware/          # Custom middlewares (e.g. error handling)
-│   │   │   └── errorHandler.js
-│   │   ├── routes/              # Express API route declarations
-│   │   │   ├── index.js
-│   │   │   ├── propertyRoutes.js
-│   │   │   └── userRoutes.js
+│   │   ├── config/              # Database configurations
+│   │   ├── controllers/         # propertyController & crmController
+│   │   ├── middleware/          # Error handlers & logger
+│   │   ├── routes/              # /properties, /crm, /users
 │   │   ├── app.js               # Express application setup
 │   │   └── server.js            # Server entrypoint
-│   ├── .env.example             # Backend environment variable template
-│   ├── .gitignore
 │   └── package.json
 │
-├── frontend/                    # React frontend (Vite)
-│   ├── public/                  # Static assets
+├── frontend/                    # Buyer Portal (Vite + React 19, Port 5173)
 │   ├── src/
-│   │   ├── components/          # Reusable UI components
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   └── PropertyCard.jsx
-│   │   ├── pages/               # Application views
-│   │   │   ├── Home.jsx
-│   │   │   ├── Properties.jsx
-│   │   │   └── AddProperty.jsx
-│   │   ├── services/            # API client service
-│   │   │   └── api.js
-│   │   ├── App.jsx              # Main React application
-│   │   ├── App.css              # Custom styling
-│   │   ├── index.css            # Global resets
-│   │   └── main.jsx             # React DOM root entrypoint
-│   ├── index.html
-│   ├── vite.config.js           # Vite config with API proxy
-│   ├── .gitignore
+│   │   ├── components/          # Navbar, Footer, PropertyCard, Comparison, LeadModal
+│   │   ├── pages/               # Home, Properties, Localities, Principles, AddProperty
+│   │   ├── services/            # api.js with resilient offline fallback
+│   │   └── App.jsx
 │   └── package.json
 │
-├── .gitignore                   # Root gitignore
-├── package.json                 # Root script runner
-└── README.md                    # Project documentation
+├── adminPanel/                  # Admin & CRM Suite (Vite + React 19, Port 5174)
+│   ├── src/
+│   │   ├── components/          # Sidebar, Topbar, StatCard, PageInsightsChart, AIInsights
+│   │   ├── pages/               # DashboardOverview, PropertiesManagement, DealsPipeline, ClientsLeads, Reviews, Messages, Insights
+│   │   ├── services/            # adminApi.js with offline persistence & REST client
+│   │   └── App.jsx
+│   └── package.json
+│
+├── package.json                 # Root script orchestrator
+└── README.md
 ```
 
 ---
 
 ## 🚀 Quick Start Guide
 
-### 1. Install Dependencies
+### 1. Install All Dependencies
 
-You can install both backend and frontend dependencies using the root helper script:
+Install backend, frontend, and admin panel dependencies in one command:
 
 ```bash
 npm run install:all
 ```
 
 Or install them individually:
-
 ```bash
 # Backend
-cd backend
-npm install
+cd backend && npm install
 
 # Frontend
-cd ../frontend
-npm install
+cd ../frontend && npm install
+
+# Admin Panel
+cd ../adminPanel && npm install
 ```
 
 ---
 
 ### 2. Run the Development Servers
 
-Open two terminal windows:
+You can launch all three servers concurrently or individually:
 
-#### Terminal 1: Backend API
+#### Option A: Run Everything Concurrently
 ```bash
-npm run dev:backend
-# Or: cd backend && npm run dev
+npm run dev:all
 ```
-Backend runs on: **`http://localhost:5000`**  
-API health check: **`http://localhost:5000/api/health`**
 
-#### Terminal 2: React Frontend
-```bash
-npm run dev:frontend
-# Or: cd frontend && npm run dev
-```
-Frontend runs on: **`http://localhost:5173`**
+#### Option B: Run Individually
+- **Backend API (Port 5000)**:
+  ```bash
+  npm run dev:backend
+  ```
+- **Frontend Marketplace (Port 5173)**:
+  ```bash
+  npm run dev:frontend
+  ```
+- **Admin Panel & CRM (Port 5174)**:
+  ```bash
+  npm run dev:admin
+  ```
+
+---
+
+## 🖥️ Application Previews & Ports
+
+| Application | Port | Description |
+|---|---|---|
+| **Frontend Marketplace** | `http://localhost:5173` | Buyer portal with multi-city search, 3-way compare, and site visit booking |
+| **Admin Panel & CRM** | `http://localhost:5174` | Admin dashboard with New Listings, Deals Kanban, AI Insights & Analytics |
+| **Backend REST API** | `http://localhost:5000` | REST API endpoints for properties, deals, leads, and reviews |
 
 ---
 
@@ -106,8 +107,16 @@ Frontend runs on: **`http://localhost:5173`**
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/health` | Health check endpoint |
-| `GET` | `/api/properties` | Get all properties (supports `?type=` & `?location=` filters) |
+| `GET` | `/api/properties` | Get all properties (supports `?type=`, `?city=`, `?location=` filters) |
 | `GET` | `/api/properties/:id` | Get single property by ID |
 | `POST` | `/api/properties` | Create a new property listing |
-| `POST` | `/api/users/register` | Register a new user |
-| `POST` | `/api/users/login` | Login user |
+| `PUT` | `/api/properties/:id` | Update property listing |
+| `PATCH` | `/api/properties/:id/status` | Update property status (`Approved`, `Pending`, `Sold`) |
+| `DELETE` | `/api/properties/:id` | Delete property listing |
+| `GET` | `/api/crm/deals` | Get all sales pipeline deals |
+| `POST` | `/api/crm/deals` | Add deal to pipeline |
+| `PATCH` | `/api/crm/deals/:id/stage` | Move deal stage (`New Lead`, `Viewing Scheduled`, etc.) |
+| `GET` | `/api/crm/leads` | Get customer site visit leads |
+| `POST` | `/api/crm/leads` | Create new customer lead |
+| `GET` | `/api/crm/reviews` | Get customer reviews & ratings |
+| `GET` | `/api/crm/messages` | Get buyer inquiries & communications |
