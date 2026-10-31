@@ -10,6 +10,7 @@ import {
   Clock,
   Sparkles,
   ExternalLink,
+  RefreshCw,
 } from 'lucide-react';
 
 export default function PendingApprovals({
@@ -17,6 +18,7 @@ export default function PendingApprovals({
   onApprove,
   onReject,
   onEdit,
+  onRefresh,
 }) {
   return (
     <div className="pending-approvals-view">
@@ -50,7 +52,7 @@ export default function PendingApprovals({
               Action Required
             </span>
             <span style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
-              Homeowner & Developer Submissions from Frontend
+              Homeowner &amp; Developer Submissions from Frontend
             </span>
           </div>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff' }}>
@@ -59,16 +61,40 @@ export default function PendingApprovals({
           <p style={{ fontSize: '0.85rem', color: '#94a3b8', maxWidth: '640px', marginTop: '4px' }}>
             When users submit property listings from the buyer marketplace, they arrive here in{' '}
             <strong style={{ color: '#f59e0b' }}>Pending</strong> status. Once you click{' '}
-            <strong style={{ color: '#10b981' }}>"Approve & Publish"</strong>, the listing will
-            automatically appear live on the Frontend Home & Explore Properties pages.
+            <strong style={{ color: '#10b981' }}>&quot;Approve &amp; Publish&quot;</strong>, the listing will
+            automatically appear live on the Frontend Home &amp; Explore Properties pages.
           </p>
         </div>
 
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>
-            {pendingProperties.length}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>
+              {pendingProperties.length}
+            </div>
+            <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Awaiting Approval</span>
           </div>
-          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Awaiting Approval</span>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                color: '#ffffff',
+                border: '1px solid rgba(255,255,255,0.2)',
+                padding: '0.4rem 0.85rem',
+                borderRadius: '8px',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+              title="Refresh pending list from backend"
+            >
+              <RefreshCw size={14} />
+              Refresh
+            </button>
+          )}
         </div>
       </div>
 

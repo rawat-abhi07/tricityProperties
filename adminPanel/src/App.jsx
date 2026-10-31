@@ -70,6 +70,13 @@ export default function App() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Auto-refresh when navigating to pending-approvals to get latest from backend
+  useEffect(() => {
+    if (activeView === 'pending-approvals') {
+      loadAllData();
+    }
+  }, [activeView]);
+
   const loadAllData = async () => {
     try {
       setLoading(true);
@@ -237,6 +244,7 @@ export default function App() {
               onApprove={handleApproveProperty}
               onReject={handleRejectProperty}
               onEdit={handleOpenEdit}
+              onRefresh={loadAllData}
             />
           )}
 
