@@ -9,6 +9,7 @@ export default function Properties({
   onOpenLeadModal,
   onToggleCompare,
   onToggleSave,
+  onSelectProperty,
   comparedIds = [],
   savedIds = [],
 }) {
@@ -203,6 +204,7 @@ export default function Properties({
               onToggleCompare={onToggleCompare}
               onToggleSave={onToggleSave}
               onOpenLeadModal={onOpenLeadModal}
+              onSelectProperty={onSelectProperty}
             />
           ))}
         </div>

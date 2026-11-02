@@ -6,6 +6,7 @@ import Properties from './pages/Properties';
 import Localities from './pages/Localities';
 import Principles from './pages/Principles';
 import AddProperty from './pages/AddProperty';
+import PropertyDetail from './pages/PropertyDetail';
 import ContextualLeadModal from './components/ContextualLeadModal';
 import ComparisonDrawer from './components/ComparisonDrawer';
 import ComparisonModal from './components/ComparisonModal';
@@ -15,10 +16,15 @@ import './App.css';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
+  const [previousTab, setPreviousTab] = useState('properties');
   const [selectedCity, setSelectedCity] = useState('All Tricity');
   const [properties, setProperties] = useState(fallbackProperties);
   const [loading, setLoading] = useState(true);
   const [exploreFilters, setExploreFilters] = useState({});
+
+  // Single Property Detail Navigation state
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
 
   // Comparison State
   const [comparedProperties, setComparedProperties] = useState([]);
@@ -42,20 +48,6 @@ export default function App() {
     mode: 'visit',
   });
 
-  // Load properties on initial mount
-  useEffect(() => {
-    loadProperties();
-  }, []);
-
-  // Save to localStorage when shortlist changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('th_saved_ids', JSON.stringify(savedPropertyIds));
-    } catch {
-      // LocalStorage error handling
-    }
-  }, [savedPropertyIds]);
-
   const loadProperties = async () => {
     try {
       setLoading(true);
@@ -70,13 +62,68 @@ export default function App() {
     }
   };
 
+  // Load properties on initial mount
+  useEffect(() => {
+    loadProperties();
+  }, []);
+
+  // Listen for browser URL hash changes for sharable direct listing links (#property/:id)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#property/')) {
+        const id = hash.replace('#property/', '').trim();
+        if (id) {
+          setSelectedPropertyId(id);
+          const found = properties.find((p) => String(p.id) === String(id));
+          if (found) {
+            setSelectedProperty(found);
+          }
+          setActiveTab('property-detail');
+        }
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [properties]);
+
+  // Save to localStorage when shortlist changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('th_saved_ids', JSON.stringify(savedPropertyIds));
+    } catch {
+      // LocalStorage error handling
+    }
+  }, [savedPropertyIds]);
+
   // Tab change & scroll to top
   const handleTabChange = (newTab) => {
+    if (window.location.hash.startsWith('#property/')) {
+      window.history.pushState(null, '', window.location.pathname);
+    }
     setActiveTab(newTab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (newTab === 'home' || newTab === 'properties') {
       loadProperties();
     }
+  };
+
+  // Select Single Property & navigate to Single Listing Page
+  const handleSelectProperty = (property) => {
+    setPreviousTab(activeTab === 'property-detail' ? 'properties' : activeTab);
+    setSelectedProperty(property);
+    setSelectedPropertyId(property.id);
+    setActiveTab('property-detail');
+    window.location.hash = `#property/${property.id}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Back from Single Listing Page
+  const handleBackFromDetail = () => {
+    window.history.pushState(null, '', window.location.pathname);
+    handleTabChange(previousTab || 'properties');
   };
 
   // City change handler
@@ -156,7 +203,7 @@ export default function App() {
       <Navbar
         selectedCity={selectedCity}
         onCityChange={handleCityChange}
-        activeTab={activeTab}
+        activeTab={activeTab === 'property-detail' ? 'properties' : activeTab}
         onTabChange={handleTabChange}
         savedCount={savedPropertyIds.length}
         compareCount={comparedProperties.length}
@@ -182,6 +229,7 @@ export default function App() {
                 onOpenLeadModal={handleOpenLeadModal}
                 onToggleCompare={handleToggleCompare}
                 onToggleSave={handleToggleSave}
+                onSelectProperty={handleSelectProperty}
                 comparedIds={comparedIds}
                 savedIds={savedPropertyIds}
               />
@@ -196,6 +244,7 @@ export default function App() {
                 onOpenLeadModal={handleOpenLeadModal}
                 onToggleCompare={handleToggleCompare}
                 onToggleSave={handleToggleSave}
+                onSelectProperty={handleSelectProperty}
                 comparedIds={comparedIds}
                 savedIds={savedPropertyIds}
               />
@@ -219,6 +268,24 @@ export default function App() {
                 onCancel={() => handleTabChange('home')}
               />
             )}
+
+            {activeTab === 'property-detail' && (
+              <PropertyDetail
+                key={selectedPropertyId || selectedProperty?.id || 'detail'}
+                property={selectedProperty}
+                propertyId={selectedPropertyId}
+                allProperties={approvedProperties}
+                onBack={handleBackFromDetail}
+                onOpenLeadModal={handleOpenLeadModal}
+                onToggleCompare={handleToggleCompare}
+                onToggleSave={handleToggleSave}
+                onSelectProperty={handleSelectProperty}
+                isCompared={selectedProperty ? comparedIds.includes(selectedProperty.id) : false}
+                isSaved={selectedProperty ? savedPropertyIds.includes(selectedProperty.id) : false}
+                comparedIds={comparedIds}
+                savedIds={savedPropertyIds}
+              />
+            )}
           </>
         )}
       </main>
@@ -238,6 +305,7 @@ export default function App() {
           onRemove={handleRemoveCompare}
           onClose={() => setShowComparisonModal(false)}
           onSelectLead={handleOpenLeadModal}
+          onSelectProperty={handleSelectProperty}
         />
       )}
 
@@ -249,6 +317,7 @@ export default function App() {
           onToggleSave={handleToggleSave}
           onToggleCompare={handleToggleCompare}
           onOpenLeadModal={handleOpenLeadModal}
+          onSelectProperty={handleSelectProperty}
           comparedIds={comparedIds}
         />
       )}

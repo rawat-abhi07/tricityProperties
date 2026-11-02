@@ -7,6 +7,7 @@ export default function SavedModal({
   onToggleSave,
   onToggleCompare,
   onOpenLeadModal,
+  onSelectProperty,
   comparedIds,
 }) {
   return (
@@ -41,6 +42,10 @@ export default function SavedModal({
                   onToggleSave={onToggleSave}
                   onToggleCompare={onToggleCompare}
                   onOpenLeadModal={onOpenLeadModal}
+                  onSelectProperty={(selected) => {
+                    onClose();
+                    if (onSelectProperty) onSelectProperty(selected);
+                  }}
                 />
               ))}
             </div>

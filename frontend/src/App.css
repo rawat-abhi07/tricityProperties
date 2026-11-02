@@ -4543,3 +4543,53 @@ body {
     height: 120px;
   }
 }
+
+
+/* Clickable card elements for navigation */
+.clickable-prop-image,
+.clickable-title,
+.clickable-price-area {
+  cursor: pointer;
+}
+
+.clickable-title:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.card-details-link-btn {
+  display: block;
+  width: 100%;
+  margin: 0.6rem 0 0.8rem 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e2046;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card-details-link-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.comp-details-link-btn {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1e2046;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comp-details-link-btn:hover {
+  background: #e2e8f0;
+}

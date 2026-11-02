@@ -1,7 +1,14 @@
 import React from 'react';
 
-export default function ComparisonModal({ items, onRemove, onClose, onSelectLead }) {
+export default function ComparisonModal({ items, onRemove, onClose, onSelectLead, onSelectProperty }) {
   if (!items || items.length === 0) return null;
+
+  const handlePropertyClick = (item) => {
+    onClose();
+    if (onSelectProperty) {
+      onSelectProperty(item);
+    }
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -22,7 +29,14 @@ export default function ComparisonModal({ items, onRemove, onClose, onSelectLead
                 {items.map((item) => (
                   <th key={item.id} className="prop-col">
                     <div className="comp-card-top">
-                      <img src={item.image} alt={item.title} className="comp-thumb" />
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="comp-thumb"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handlePropertyClick(item)}
+                        title="Click to view full property details"
+                      />
                       <button 
                         className="comp-remove-pill" 
                         onClick={() => onRemove(item.id)}
@@ -30,7 +44,14 @@ export default function ComparisonModal({ items, onRemove, onClose, onSelectLead
                       >
                         Remove ✕
                       </button>
-                      <h4 className="comp-prop-title">{item.title}</h4>
+                      <h4
+                        className="comp-prop-title"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handlePropertyClick(item)}
+                        title="Click to view full property details"
+                      >
+                        {item.title}
+                      </h4>
                       <div className="comp-prop-price">{item.formattedPrice}</div>
                       <div className="comp-prop-sqft">{item.pricePerSqFt}</div>
                     </div>
@@ -95,15 +116,23 @@ export default function ComparisonModal({ items, onRemove, onClose, onSelectLead
                 <td className="feature-label">Action</td>
                 {items.map((item) => (
                   <td key={item.id}>
-                    <button
-                      className="comp-action-btn"
-                      onClick={() => {
-                        onClose();
-                        onSelectLead(item, 'visit');
-                      }}
-                    >
-                      Schedule Visit
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <button
+                        className="comp-action-btn"
+                        onClick={() => {
+                          onClose();
+                          onSelectLead(item, 'visit');
+                        }}
+                      >
+                        Schedule Visit
+                      </button>
+                      <button
+                        className="comp-details-link-btn"
+                        onClick={() => handlePropertyClick(item)}
+                      >
+                        View Full Details →
+                      </button>
+                    </div>
                   </td>
                 ))}
               </tr>
