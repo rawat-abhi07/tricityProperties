@@ -1,4 +1,11 @@
 import React, { useState } from 'react';
+import {
+  IconHeart,
+  IconShield,
+  IconMapPin,
+  IconPhone,
+  IconCamera,
+} from './DetailIcons';
 
 export default function PropertyCard({
   property,
@@ -72,7 +79,8 @@ export default function PropertyCard({
               ›
             </button>
             <span className="card-photo-count">
-              📷 {activeImgIndex + 1}/{imagesList.length}
+              <IconCamera size={11} className="card-cam-icon" />
+              <span>{activeImgIndex + 1}/{imagesList.length}</span>
             </span>
           </>
         )}
@@ -93,7 +101,7 @@ export default function PropertyCard({
           title={isSaved ? 'Remove from Shortlist' : 'Add to Shortlist'}
           aria-label="Save property"
         >
-          {isSaved ? '❤️' : '🤍'}
+          <IconHeart size={16} filled={isSaved} />
         </button>
 
         <span className="prop-type-tag">{property.type}</span>
@@ -110,7 +118,8 @@ export default function PropertyCard({
             )}
           </div>
           <div className="prop-rera-pill" title={`Registered under ${property.reraNumber}`}>
-            <span className="shield-icon">🛡️</span> RERA
+            <IconShield size={12} className="shield-icon" />
+            <span>RERA</span>
           </div>
         </div>
 
@@ -123,7 +132,8 @@ export default function PropertyCard({
           {property.title}
         </h3>
         <p className="prop-location">
-          <span className="pin-icon">📍</span> {property.location}
+          <IconMapPin size={13} className="pin-icon" />
+          <span>{property.location}</span>
         </p>
 
         {/* Specs row */}
@@ -168,7 +178,8 @@ export default function PropertyCard({
             onClick={handleCallClick}
             title="Direct Verified Contact"
           >
-            📞 {showPhone ? 'Hide Number' : 'Call Now'}
+            <IconPhone size={13} className="action-btn-icon" />
+            <span>{showPhone ? 'Hide' : 'Call Now'}</span>
           </button>
 
           <button

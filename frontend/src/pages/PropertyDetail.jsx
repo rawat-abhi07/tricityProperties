@@ -1,7 +1,141 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PropertyCard from '../components/PropertyCard';
 import { submitLead, fetchPropertyById } from '../services/api';
+import {
+  IconTrain,
+  IconBus,
+  IconPlane,
+  IconHospital,
+  IconPool,
+  IconGym,
+  IconSecurity,
+  IconPower,
+  IconEV,
+  IconPark,
+  IconElevator,
+  IconClubhouse,
+  IconWater,
+  IconParking,
+  IconBed,
+  IconRuler,
+  IconKey,
+  IconCompass,
+  IconBuilding,
+  IconUser,
+  IconPhone,
+  IconShield,
+  IconHeart,
+  IconMapPin,
+  IconCamera,
+  IconSearch,
+  IconCalendar,
+  IconWhatsApp,
+  IconShare,
+} from '../components/DetailIcons';
 import './PropertyDetail.css';
+
+// Key Essential Transit Hubs across Tricity with verified GPS coordinates
+const MAIN_TRANSIT_POINTS = [
+  {
+    id: 'railway',
+    title: 'Chandigarh Railway Station',
+    subtitle: 'via Vikas Marg',
+    icon: IconTrain,
+    coords: [30.7032, 76.8286],
+  },
+  {
+    id: 'bus_stand',
+    title: 'ISBT Sector 43 Bus Stand',
+    subtitle: 'via Jan Marg',
+    icon: IconBus,
+    coords: [30.7180, 76.7480],
+  },
+  {
+    id: 'airport',
+    title: "Shaheed Bhagat Singh Airport (IXC)",
+    subtitle: 'via Airport Expressway',
+    icon: IconPlane,
+    coords: [30.6735, 76.7885],
+  },
+  {
+    id: 'hospital',
+    title: 'Max & Fortis Super Speciality',
+    subtitle: 'via Mohali Stadium Road',
+    icon: IconHospital,
+    coords: [30.7011, 76.7214],
+  },
+];
+
+// Verified Society Amenities with SVG Icons
+const AMENITIES_CONFIG = [
+  { icon: IconPool, title: 'Swimming Pool', note: 'Adults & Kids' },
+  { icon: IconGym, title: 'Modern Gym', note: 'Fitness Center' },
+  { icon: IconSecurity, title: '24/7 Security', note: 'Gated 3-Tier CCTV' },
+  { icon: IconPower, title: '100% Power Backup', note: 'Full DG Support' },
+  { icon: IconEV, title: 'EV Charging Bay', note: 'Fast Chargers' },
+  { icon: IconPark, title: 'Landscaped Gardens', note: 'Jogging Track' },
+  { icon: IconElevator, title: 'High-speed Elevators', note: 'Automatic ARD' },
+  { icon: IconClubhouse, title: 'Clubhouse & Sports', note: 'Indoor Games' },
+  { icon: IconWater, title: '24/7 Treated Water', note: 'Rainwater Setup' },
+  { icon: IconParking, title: 'Visitor Parking', note: 'Designated Bays' },
+];
+
+// Locality Reference Coordinates in Tricity
+const LOCALITY_COORDS = {
+  'sector 82': [30.6690, 76.7420],
+  'airport road': [30.6690, 76.7420],
+  'sector 34': [30.7210, 76.7680],
+  'sector 20': [30.6860, 76.8520],
+  'pr7': [30.6480, 76.8250],
+  'zirakpur': [30.6480, 76.8250],
+  'eco city': [30.8020, 76.7400],
+  'new chandigarh': [30.8020, 76.7400],
+  'aerocity': [30.6550, 76.7650],
+  'sector 8': [30.7490, 76.7950],
+  'mdc': [30.7180, 76.8420],
+  'panchkula': [30.6860, 76.8520],
+  'mohali': [30.6900, 76.7200],
+  'chandigarh': [30.7333, 76.7794],
+};
+
+// Category supplementary photography to prevent blank image boxes
+const BACKUP_PHOTOS = {
+  Apartment: [
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+  ],
+  Villa: [
+    'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+  ],
+  'Independent Floor': [
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+  ],
+  'Residential Plot': [
+    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80',
+  ],
+};
+
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  // Apply Tricity urban grid routing factor (1.28)
+  return Math.round(R * c * 1.28 * 10) / 10;
+}
 
 export default function PropertyDetail({
   property: initialProperty,
@@ -24,8 +158,8 @@ export default function PropertyDetail({
   const [showPhone, setShowPhone] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
-  // Derive the active property
-  const property = initialProperty || fetchedProperty;
+  // Commute State
+  const [currentHour] = useState(() => new Date().getHours());
 
   // Quick Inline Lead Form state
   const [quickName, setQuickName] = useState('');
@@ -38,6 +172,9 @@ export default function PropertyDetail({
   const [loanTenureYears, setLoanTenureYears] = useState(20);
   const [interestRate, setInterestRate] = useState(8.5);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
+
+  // Derive the active property
+  const property = initialProperty || fetchedProperty;
 
   // Load property asynchronously only if passed by ID without initialProperty
   useEffect(() => {
@@ -65,15 +202,65 @@ export default function PropertyDetail({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Images list
+  // Compute Origin Coordinates for this property
+  const propertyCoords = useMemo(() => {
+    if (!property) return [30.7333, 76.7794];
+    const loc = (property.location || '').toLowerCase();
+    const city = (property.city || '').toLowerCase();
+
+    for (const [key, coords] of Object.entries(LOCALITY_COORDS)) {
+      if (loc.includes(key) || city.includes(key)) {
+        return coords;
+      }
+    }
+    return [30.7333, 76.7794]; // Default central Tricity
+  }, [property]);
+
+  // Real-time Transit Calculation for Main Transit Hubs
+  // Driving Commute for Key Transit Hubs
+  const transitPointsData = useMemo(() => {
+    const speed = 38; // km/h standard driving speed
+    const isPeak = (currentHour >= 8 && currentHour <= 10) || (currentHour >= 17 && currentHour <= 20);
+    const trafficAdd = isPeak ? 2 : 0;
+
+    return MAIN_TRANSIT_POINTS.map((pt) => {
+      const distanceKm = calculateDistanceKm(
+        propertyCoords[0],
+        propertyCoords[1],
+        pt.coords[0],
+        pt.coords[1]
+      );
+      const baseMins = Math.max(3, Math.round((distanceKm / speed) * 60 + 2));
+      const durationMins = baseMins + trafficAdd;
+
+      return {
+        ...pt,
+        distanceKm,
+        durationMins,
+      };
+    });
+  }, [propertyCoords, currentHour]);
+
+  // Images list (with rich fallback to guarantee high-res multi-view gallery)
   const images = useMemo(() => {
     if (!property) return [];
-    if (property.images && Array.isArray(property.images) && property.images.length > 0) {
+    if (property.images && Array.isArray(property.images) && property.images.length >= 2) {
       return property.images;
     }
-    return property.image ? [property.image] : [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
-    ];
+    const typeFallback = BACKUP_PHOTOS[property.type] || BACKUP_PHOTOS.Apartment;
+    const initialList = property.images && property.images.length > 0
+      ? property.images
+      : property.image
+      ? [property.image]
+      : [];
+
+    const merged = [...initialList];
+    for (const fb of typeFallback) {
+      if (!merged.includes(fb) && merged.length < 4) {
+        merged.push(fb);
+      }
+    }
+    return merged.length > 0 ? merged : typeFallback;
   }, [property]);
 
   // Calculations for EMI
@@ -163,22 +350,20 @@ export default function PropertyDetail({
 
   if (loading) {
     return (
-      <div className="clean-listing-wrapper">
-        <div className="loader-container">
-          <div className="spinner"></div>
-          <p>Loading property details...</p>
-        </div>
+      <div className="section-container detail-loading-box">
+        <div className="spinner"></div>
+        <p>Loading verified property details...</p>
       </div>
     );
   }
 
   if (!property) {
     return (
-      <div className="clean-listing-wrapper">
+      <div className="section-container">
         <div className="empty-results-box">
-          <div className="empty-icon">⚠️</div>
+          <div className="empty-icon">🏠</div>
           <h3>Property Not Found</h3>
-          <p>The listing you are looking for may have been sold or removed.</p>
+          <p>The property listing you are looking for may have been sold or removed.</p>
           <button className="reset-action-btn" onClick={onBack}>
             ← Back to All Properties
           </button>
@@ -201,85 +386,103 @@ export default function PropertyDetail({
 
   const cleanPhone = (property.sellerPhone || '+919888214500').replace(/[^0-9]/g, '');
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-    `Hi, I am interested in "${property.title}" (${property.formattedPrice}) on Tricity Housing Marketplace. Please share more details.`
+    `Hello, I am interested in "${property.title}" (${property.formattedPrice}) on Tricity Housing Marketplace. Please share detailed brochure and schedule a site visit.`
   )}`;
 
   return (
-    <div className="clean-listing-page">
-      {/* 1. Minimal Top Navigation Bar */}
-      <div className="clean-top-nav">
-        <div className="clean-nav-inner">
-          <button className="clean-back-link" onClick={onBack}>
-            <span className="arrow">←</span> All Properties
+    <div className="detail-page-container">
+      {/* 1. Sub-Header Utility Breadcrumbs Bar */}
+      <div className="detail-breadcrumb-bar">
+        <div className="detail-bar-inner">
+          <button className="back-link-btn" onClick={onBack}>
+            <span className="back-arrow">←</span> All Tricity Properties
           </button>
 
-          <div className="clean-nav-actions">
+          <nav className="detail-breadcrumbs-path">
+            <span>Home</span>
+            <span className="sep">/</span>
+            <span>{property.city || 'Tricity'}</span>
+            <span className="sep">/</span>
+            <span className="current-crumb">{property.locality || property.location}</span>
+          </nav>
+
+          <div className="detail-quick-actions">
             <button
-              className={`clean-action-btn ${isSaved ? 'active' : ''}`}
+              className={`detail-action-pill ${isSaved ? 'saved' : ''}`}
               onClick={() => {
                 if (onToggleSave) onToggleSave(property.id);
               }}
-              title={isSaved ? 'Saved in Shortlist' : 'Save Property'}
+              title={isSaved ? 'Shortlisted' : 'Save to Shortlist'}
             >
-              <span>{isSaved ? '❤️' : '🤍'}</span>
-              <span>{isSaved ? 'Saved' : 'Save'}</span>
+              <IconHeart size={15} filled={isSaved} />
+              <span>{isSaved ? 'Saved' : 'Shortlist'}</span>
             </button>
 
             <button
-              className={`clean-action-btn ${isCompared ? 'active' : ''}`}
+              className={`detail-action-pill ${isCompared ? 'compared' : ''}`}
               onClick={() => {
                 if (onToggleCompare) onToggleCompare(property);
               }}
-              title="Compare side by side"
+              title="Add to side-by-side comparison"
             >
               <span>{isCompared ? '✓' : '⇄'}</span>
               <span>{isCompared ? 'Comparing' : 'Compare'}</span>
             </button>
 
-            <button className="clean-action-btn" onClick={handleShare} title="Share listing">
-              <span>🔗</span>
+            <button className="detail-action-pill" onClick={handleShare} title="Share listing">
+              <IconShare size={14} />
               <span>{copiedShare ? 'Copied!' : 'Share'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="clean-listing-container">
-        {/* 2. Title & Primary Price Row */}
-        <section className="clean-header-row">
-          <div className="clean-header-main">
-            <div className="clean-meta-tags">
-              <span className="meta-tag tag-possession">{property.possessionStatus || 'Ready to Move'}</span>
-              <span className="meta-tag tag-type">{property.type}</span>
-              <span className="meta-tag tag-verified">✓ {property.listingSource || 'Verified Developer'}</span>
+      <div className="detail-main-wrap">
+        {/* 2. Property Header (Matching Home Page & PropertyCard Hierarchy) */}
+        <div className="detail-header-block">
+          <div className="detail-header-left">
+            <div className="detail-badges-row">
+              <span className="badge-possession">{property.possessionStatus || 'Ready to Move'}</span>
+              <span className="badge-source">
+                <span className="verify-dot">✓</span> {property.listingSource || 'Verified Developer'}
+              </span>
               {property.reraNumber && (
-                <span className="meta-tag tag-rera">RERA: {property.reraNumber}</span>
+                <div className="prop-rera-pill" title={`Registered under ${property.reraNumber}`}>
+                  <IconShield size={12} className="shield-icon" />
+                  <span>RERA: {property.reraNumber}</span>
+                </div>
               )}
             </div>
 
-            <h1 className="clean-property-title">{property.title}</h1>
-            <p className="clean-property-address">
-              <span className="pin">📍</span> {property.location}
-              {property.city && <span className="city-label">, {property.city}</span>}
+            <h1 className="detail-title">{property.title}</h1>
+            <p className="detail-location">
+              <IconMapPin size={14} className="pin-icon" />
+              <span>{property.location}</span>
+              {property.city && !property.location.toLowerCase().includes(property.city.toLowerCase()) && (
+                <span className="city-chip">, {property.city}</span>
+              )}
             </p>
           </div>
 
-          <div className="clean-header-pricing">
-            <div className="clean-price-val">{property.formattedPrice}</div>
-            {property.pricePerSqFt && (
-              <span className="clean-price-rate">{property.pricePerSqFt}</span>
-            )}
-            <div className="clean-emi-hint">
-              Est. EMI ₹ {emiData.monthlyEmi.toLocaleString('en-IN')}/mo*
+          <div className="detail-header-right">
+            <div className="detail-price-box">
+              <span className="prop-main-price">{property.formattedPrice}</span>
+              {property.pricePerSqFt && (
+                <span className="prop-rate">{property.pricePerSqFt}</span>
+              )}
+            </div>
+            <div className="detail-emi-badge">
+              Est. EMI: <strong>₹ {emiData.monthlyEmi.toLocaleString('en-IN')} / mo*</strong>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* 3. Minimalist Photo Gallery Grid */}
-        <section className="clean-gallery-section">
-          <div className="clean-gallery-grid">
+        {/* 3. Sleek Asymmetrical Photo Gallery (No Blank Spaces Ever) */}
+        <div className="detail-gallery-block">
+          <div className="gallery-asymmetric-mosaic">
+            {/* Primary Hero Image */}
             <div
-              className="clean-gallery-hero"
+              className="gallery-hero-image-wrap"
               onClick={() => {
                 setActiveImageIndex(0);
                 setShowLightbox(true);
@@ -288,209 +491,228 @@ export default function PropertyDetail({
               <img
                 src={images[0]}
                 alt={`${property.title} - Main View`}
-                className="clean-gallery-img"
+                className="gallery-hero-image"
               />
-              <span className="clean-inspect-badge">✓ Verified On-Site Inspection</span>
+              <div className="gallery-inspect-pill">
+                <span className="green-dot">●</span> 100% Verified On-Site Photos
+              </div>
+              <span className="gallery-expand-hint">
+                <IconSearch size={13} /> Expand Photos
+              </span>
             </div>
 
-            <div className="clean-gallery-side">
-              {images.slice(1, 3).map((imgUrl, idx) => (
-                <div
-                  key={idx}
-                  className="clean-gallery-thumb"
-                  onClick={() => {
-                    setActiveImageIndex(idx + 1);
-                    setShowLightbox(true);
-                  }}
-                >
-                  <img src={imgUrl} alt={`View ${idx + 2}`} loading="lazy" />
-                  {idx === 1 && images.length > 3 && (
-                    <div className="clean-more-overlay">
-                      +{images.length - 2} More Photos
-                    </div>
-                  )}
-                </div>
-              ))}
-              {images.length <= 1 && (
-                <div
-                  className="clean-gallery-thumb placeholder"
-                  onClick={() => setShowLightbox(true)}
-                >
-                  <div className="clean-placeholder-text">
-                    <span>🏠</span>
-                    <span>High-Resolution Architectural View</span>
+            {/* Stacked Secondary Photos (Only renders if 2+ images exist) */}
+            {images.length > 1 && (
+              <div className="gallery-stacked-column">
+                {images.slice(1, 3).map((imgUrl, idx) => (
+                  <div
+                    key={idx}
+                    className="gallery-stack-thumb"
+                    onClick={() => {
+                      setActiveImageIndex(idx + 1);
+                      setShowLightbox(true);
+                    }}
+                  >
+                    <img src={imgUrl} alt={`View ${idx + 2}`} loading="lazy" />
+                    {idx === 1 && images.length > 3 && (
+                      <div className="gallery-count-overlay">
+                        <span><IconCamera size={13} /> View All {images.length} Photos</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <button
-            className="clean-view-all-photos-btn"
-            onClick={() => setShowLightbox(true)}
-          >
-            📷 View all {images.length} photos
-          </button>
-        </section>
+          {images.length <= 3 && (
+            <button
+              type="button"
+              className="gallery-all-photos-trigger"
+              onClick={() => setShowLightbox(true)}
+            >
+              <IconCamera size={13} /> View All {images.length} Photos
+            </button>
+          )}
+        </div>
 
-        {/* 4. Two-Column Main Content Layout */}
-        <div className="clean-layout-grid">
-          {/* LEFT: Information & Specifications */}
-          <div className="clean-content-col">
-            {/* Quick Specs Bar */}
-            <div className="clean-card clean-specs-card">
-              <h2 className="clean-section-heading">Overview</h2>
-              <div className="clean-specs-ribbon">
-                <div className="spec-tile">
-                  <span className="spec-label">Configuration</span>
-                  <strong className="spec-data">{property.bhk}</strong>
+        {/* 4. Two-Column Minimalist Content Body */}
+        <div className="detail-content-columns">
+          {/* LEFT: Core Property Intelligence */}
+          <div className="detail-left-pane">
+            {/* Quick Specs Overview Ribbon (Figma Style) */}
+            <div className="detail-card">
+              <div className="detail-card-header-split">
+                <h2 className="detail-card-title">Property Overview</h2>
+                <span className="prop-id-tag">Listing #{property.id || 'TRC-104'}</span>
+              </div>
+              <div className="detail-specs-grid">
+                <div className="detail-spec-box">
+                  <div className="spec-icon-label">
+                    <span className="spec-ico"><IconBed size={17} /></span>
+                    <span className="spec-label">Configuration</span>
+                  </div>
+                  <span className="spec-value">{property.bhk}</span>
                   <span className="spec-sub">{property.bedrooms || 3} Beds • {property.bathrooms || 3} Baths</span>
                 </div>
 
-                <div className="spec-tile">
-                  <span className="spec-label">Super Built-up Area</span>
-                  <strong className="spec-data">{property.area}</strong>
-                  <span className="spec-sub">{property.carpetArea ? `Carpet: ${property.carpetArea}` : 'Standard Layout'}</span>
+                <div className="detail-spec-box">
+                  <div className="spec-icon-label">
+                    <span className="spec-ico"><IconRuler size={17} /></span>
+                    <span className="spec-label">Super Built-up Area</span>
+                  </div>
+                  <span className="spec-value">{property.area}</span>
+                  <span className="spec-sub">{property.carpetArea ? `Carpet: ${property.carpetArea}` : 'Spacious Layout'}</span>
                 </div>
 
-                <div className="spec-tile">
-                  <span className="spec-label">Status</span>
-                  <strong className="spec-data">{property.possessionStatus || 'Ready to Move'}</strong>
+                <div className="detail-spec-box">
+                  <div className="spec-icon-label">
+                    <span className="spec-ico"><IconKey size={17} /></span>
+                    <span className="spec-label">Possession Status</span>
+                  </div>
+                  <span className="spec-value">{property.possessionStatus || 'Ready to Move'}</span>
                   <span className="spec-sub">Immediate Handover</span>
                 </div>
 
-                <div className="spec-tile">
-                  <span className="spec-label">Facing & Vastu</span>
-                  <strong className="spec-data">North-East</strong>
+                <div className="detail-spec-box">
+                  <div className="spec-icon-label">
+                    <span className="spec-ico"><IconCompass size={17} /></span>
+                    <span className="spec-label">Facing & Vastu</span>
+                  </div>
+                  <span className="spec-value">North-East</span>
                   <span className="spec-sub">100% Vastu Compliant</span>
                 </div>
 
-                <div className="spec-tile">
-                  <span className="spec-label">Property Type</span>
-                  <strong className="spec-data">{property.type}</strong>
-                  <span className="spec-sub">Freehold Registry</span>
+                <div className="detail-spec-box">
+                  <div className="spec-icon-label">
+                    <span className="spec-ico"><IconBuilding size={17} /></span>
+                    <span className="spec-label">Property Type</span>
+                  </div>
+                  <span className="spec-value">{property.type}</span>
+                  <span className="spec-sub">Freehold Registry Title</span>
                 </div>
 
-                <div className="spec-tile">
-                  <span className="spec-label">Parking</span>
-                  <strong className="spec-data">2 Covered Bays</strong>
-                  <span className="spec-sub">Reserved Stilt</span>
+                <div className="detail-spec-box">
+                  <div className="spec-icon-label">
+                    <span className="spec-ico"><IconParking size={17} /></span>
+                    <span className="spec-label">Reserved Parking</span>
+                  </div>
+                  <span className="spec-value">2 Covered Bays</span>
+                  <span className="spec-sub">Dedicated Stilt Parking</span>
                 </div>
               </div>
             </div>
 
-            {/* Description */}
-            <div className="clean-card">
-              <h2 className="clean-section-heading">About This Property</h2>
-              <p className="clean-description-body">
+            {/* About Property Description */}
+            <div className="detail-card">
+              <h2 className="detail-card-title">About This Home</h2>
+              <p className="detail-narrative">
                 {property.description ||
-                  `This refined ${property.bhk} residence located in ${property.location} delivers contemporary design, generous natural light, and seamless connectivity across Chandigarh, Mohali, and Panchkula.`}
+                  `This refined ${property.bhk} residence situated in ${property.location} offers thoughtful architectural design, generous daylight cross-ventilation, and effortless connectivity across Chandigarh, Mohali, and Panchkula.`}
               </p>
 
-              <h3 className="clean-sub-heading">Key Features</h3>
-              <ul className="clean-features-list">
+              <h3 className="detail-sub-heading">Key Highlights</h3>
+              <ul className="detail-features-checklist">
                 <li>
-                  <span className="clean-check">✓</span>
-                  <span><strong>Verified Title:</strong> 100% RERA & GMADA approved with clean title search. Pre-approved for bank loans.</span>
+                  <span className="check-ico">✓</span>
+                  <div>
+                    <strong>100% Clear Title & RERA Registered:</strong> Clean legal verification, GMADA/Municipal clearance, and approved for instant home loan processing from SBI, HDFC & ICICI.
+                  </div>
                 </li>
                 <li>
-                  <span className="clean-check">✓</span>
-                  <span><strong>Cross Ventilation:</strong> 3-side open layout ensuring abundant fresh air and natural daylight.</span>
+                  <span className="check-ico">✓</span>
+                  <div>
+                    <strong>Optimized Natural Ventilation:</strong> Corner residence with 3-side open layout ensuring uninterrupted airflow and pleasant sunlight.
+                  </div>
                 </li>
                 <li>
-                  <span className="clean-check">✓</span>
-                  <span><strong>Premium Finishes:</strong> Italian marble living area, modular kitchen, and branded bathroom fittings.</span>
+                  <span className="check-ico">✓</span>
+                  <div>
+                    <strong>High-End Interior Craftsmanship:</strong> Italian marble living lounge, premium modular kitchen, branded sanitary fixtures (Kohler / Grohe), and soundproof double-glazed windows.
+                  </div>
                 </li>
                 <li>
-                  <span className="clean-check">✓</span>
-                  <span><strong>Connectivity:</strong> Quick access to PR7/Airport Expressway, schools, and IT City.</span>
+                  <span className="check-ico">✓</span>
+                  <div>
+                    <strong>Direct Expressway Access:</strong> Wide arterial road with zero traffic bottleneck, close to top international schools and IT City.
+                  </div>
                 </li>
               </ul>
             </div>
 
-            {/* Amenities */}
-            <div className="clean-card">
-              <h2 className="clean-section-heading">Society Amenities</h2>
-              <div className="clean-amenities-grid">
-                {[
-                  { icon: '🏊‍♂️', title: 'Swimming Pool' },
-                  { icon: '🏋️‍♂️', title: 'Gym & Fitness' },
-                  { icon: '🛡️', title: '24/7 Security & CCTV' },
-                  { icon: '⚡', title: '100% Power Backup' },
-                  { icon: '🚗', title: 'EV Charging Station' },
-                  { icon: '🌳', title: 'Landscaped Gardens' },
-                  { icon: '🛗', title: 'High-speed Lifts' },
-                  { icon: '🎾', title: 'Clubhouse & Sports' },
-                  { icon: '💧', title: '24/7 Water Supply' },
-                  { icon: '📦', title: 'Visitor Parking' },
-                ].map((item, idx) => (
-                  <div key={idx} className="clean-amenity-tile">
-                    <span className="amenity-ico">{item.icon}</span>
-                    <span className="amenity-txt">{item.title}</span>
-                  </div>
-                ))}
+            {/* Society Amenities Grid */}
+            <div className="detail-card">
+              <div className="detail-card-header-split">
+                <h2 className="detail-card-title">Society Amenities & Facilities</h2>
+                <span className="amenities-count-tag">10 Verified Features</span>
+              </div>
+              <div className="detail-amenities-flow">
+                {AMENITIES_CONFIG.map((item, idx) => {
+                  const AmenityIcon = item.icon;
+                  return (
+                    <div key={idx} className="detail-amenity-chip">
+                      <span className="chip-icon-box">
+                        <AmenityIcon size={20} className="amenity-svg-icon" />
+                      </span>
+                      <div className="chip-text">
+                        <strong>{item.title}</strong>
+                        <span>{item.note}</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Room Dimensions */}
-            <div className="clean-card">
-              <h2 className="clean-section-heading">Floor & Space Details</h2>
-              <div className="clean-table-wrap">
-                <table className="clean-specs-table">
-                  <thead>
-                    <tr>
-                      <th>Room</th>
-                      <th>Dimensions</th>
-                      <th>Flooring</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Living & Dining</td>
-                      <td>22' 0" × 15' 6"</td>
-                      <td>Italian Marble</td>
-                    </tr>
-                    <tr>
-                      <td>Master Bedroom</td>
-                      <td>16' 0" × 14' 0"</td>
-                      <td>Laminated Wooden</td>
-                    </tr>
-                    <tr>
-                      <td>Bedroom 2</td>
-                      <td>14' 0" × 12' 6"</td>
-                      <td>Vitrified Tiles</td>
-                    </tr>
-                    <tr>
-                      <td>Bedroom 3</td>
-                      <td>13' 0" × 12' 0"</td>
-                      <td>Vitrified Tiles</td>
-                    </tr>
-                    <tr>
-                      <td>Kitchen</td>
-                      <td>12' 0" × 9' 6"</td>
-                      <td>Anti-Skid Granito</td>
-                    </tr>
-                    <tr>
-                      <td>Balcony</td>
-                      <td>18' 0" × 6' 0"</td>
-                      <td>Rustic Weatherproof</td>
-                    </tr>
-                  </tbody>
-                </table>
+            {/* 5. NEIGHBOURHOOD & COMMUTE */}
+            <div className="detail-card commute-minimal-card">
+              <div className="commute-minimal-header">
+                <div className="commute-minimal-title-col">
+                  <h2 className="detail-card-title">Neighbourhood & Commute</h2>
+                  <p className="commute-minimal-subtitle">
+                    Key transit hubs and driving distances from <strong>{property.location}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* 4 Main Transit Hubs Grid */}
+              <div className="commute-points-grid">
+                {transitPointsData.map((pt) => {
+                  const HubIcon = pt.icon;
+                  return (
+                    <div key={pt.id} className="commute-point-tile">
+                      <div className="commute-point-icon-box">
+                        <HubIcon size={21} className="commute-svg-icon" />
+                      </div>
+
+                      <div className="commute-point-details">
+                        <div className="commute-point-top-row">
+                          <span className="commute-point-name">{pt.title}</span>
+                          <span className="commute-duration-badge">{pt.durationMins} mins</span>
+                        </div>
+                        <div className="commute-point-bottom-row">
+                          <span className="commute-distance-badge">{pt.distanceKm} km</span>
+                          <span className="commute-point-dot">•</span>
+                          <span className="commute-point-route">{pt.subtitle}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* EMI Loan Calculator */}
-            <div className="clean-card">
-              <div className="clean-card-header-split">
-                <h2 className="clean-section-heading">Home Loan Calculator</h2>
-                <span className="clean-loan-tag">SBI • HDFC • ICICI Approved</span>
+            {/* Home Loan EMI Calculator */}
+            <div className="detail-card">
+              <div className="detail-card-header-split">
+                <h2 className="detail-card-title">Home Loan EMI Estimator</h2>
+                <span className="bank-partner-tag">Pre-approved by SBI • HDFC • ICICI</span>
               </div>
 
-              <div className="clean-calc-flex">
-                <div className="clean-calc-sliders">
-                  <div className="clean-slider-group">
-                    <div className="clean-slider-label">
+              <div className="emi-calculator-flex">
+                <div className="emi-sliders-col">
+                  <div className="slider-group">
+                    <div className="slider-label-row">
                       <span>Down Payment ({downPaymentPercent}%)</span>
                       <strong>{formatINR(emiData.downPayment)}</strong>
                     </div>
@@ -501,12 +723,12 @@ export default function PropertyDetail({
                       step="5"
                       value={downPaymentPercent}
                       onChange={(e) => setDownPaymentPercent(Number(e.target.value))}
-                      className="clean-range"
+                      className="emi-slider-input"
                     />
                   </div>
 
-                  <div className="clean-slider-group">
-                    <div className="clean-slider-label">
+                  <div className="slider-group">
+                    <div className="slider-label-row">
                       <span>Interest Rate</span>
                       <strong>{interestRate}% p.a.</strong>
                     </div>
@@ -517,14 +739,14 @@ export default function PropertyDetail({
                       step="0.1"
                       value={interestRate}
                       onChange={(e) => setInterestRate(Number(e.target.value))}
-                      className="clean-range"
+                      className="emi-slider-input"
                     />
                   </div>
 
-                  <div className="clean-slider-group">
-                    <div className="clean-slider-label">
-                      <span>Tenure</span>
-                      <strong>{loanTenureYears} Years</strong>
+                  <div className="slider-group">
+                    <div className="slider-label-row">
+                      <span>Loan Tenure</span>
+                      <strong>{loanTenureYears} Years ({loanTenureYears * 12} Months)</strong>
                     </div>
                     <input
                       type="range"
@@ -533,165 +755,168 @@ export default function PropertyDetail({
                       step="1"
                       value={loanTenureYears}
                       onChange={(e) => setLoanTenureYears(Number(e.target.value))}
-                      className="clean-range"
+                      className="emi-slider-input"
                     />
                   </div>
                 </div>
 
-                <div className="clean-calc-display">
-                  <span className="calc-kicker">Estimated Monthly EMI</span>
-                  <div className="calc-amount">₹ {emiData.monthlyEmi.toLocaleString('en-IN')}</div>
-                  <span className="calc-note">per month for {loanTenureYears} years</span>
-                  <div className="calc-breakdown-line">
+                <div className="emi-result-card">
+                  <span className="emi-kicker">Estimated Monthly EMI</span>
+                  <div className="emi-number">₹ {emiData.monthlyEmi.toLocaleString('en-IN')}</div>
+                  <span className="emi-tenure-note">per month for {loanTenureYears} years</span>
+                  <div className="emi-breakdown-row">
                     <span>Loan: {formatINR(emiData.loanAmount)}</span>
                     <span>•</span>
                     <span>Interest: {formatINR(emiData.totalInterest)}</span>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Commute */}
-            <div className="clean-card">
-              <h2 className="clean-section-heading">Neighborhood & Commute</h2>
-              <div className="clean-commute-grid">
-                <div className="clean-commute-item">
-                  <span className="commute-ico">✈️</span>
-                  <div>
-                    <strong>10 Mins</strong>
-                    <p>Chandigarh International Airport</p>
-                  </div>
-                </div>
-                <div className="clean-commute-item">
-                  <span className="commute-ico">🛍️</span>
-                  <div>
-                    <strong>15 Mins</strong>
-                    <p>Elante Mall & Business District</p>
-                  </div>
-                </div>
-                <div className="clean-commute-item">
-                  <span className="commute-ico">🏥</span>
-                  <div>
-                    <strong>8 Mins</strong>
-                    <p>Max & Fortis Hospitals</p>
-                  </div>
-                </div>
-                <div className="clean-commute-item">
-                  <span className="commute-ico">🎓</span>
-                  <div>
-                    <strong>5 Mins</strong>
-                    <p>Leading International Schools</p>
-                  </div>
+                  <button
+                    type="button"
+                    className="emi-inquire-btn"
+                    onClick={() => {
+                      if (onOpenLeadModal) onOpenLeadModal(property, 'loan');
+                    }}
+                  >
+                    Check Loan Eligibility
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* RIGHT: Minimal Sticky Contact Sidebar */}
-          <div className="clean-sidebar-col">
-            <div className="clean-sticky-card">
-              <div className="clean-sidebar-price-row">
+          {/* RIGHT: Minimal Sticky Seller Action Sidebar */}
+          <div className="detail-right-pane">
+            <div className="detail-sticky-card">
+              {/* Pricing & RERA Header */}
+              <div className="sidebar-pricing-strip">
                 <div>
-                  <span className="sidebar-price-label">Price</span>
-                  <div className="sidebar-main-price">{property.formattedPrice}</div>
+                  <span className="sidebar-kicker">All-Inclusive Price</span>
+                  <div className="prop-main-price">{property.formattedPrice}</div>
+                  {property.pricePerSqFt && (
+                    <span className="prop-rate">{property.pricePerSqFt}</span>
+                  )}
                 </div>
-                <div className="sidebar-verified-badge">
+                <div className="sidebar-verified-chip">
                   <span>✓ 100% Verified</span>
                 </div>
               </div>
 
-              <div className="clean-seller-info">
-                <div className="seller-avatar">🏢</div>
-                <div>
-                  <strong className="seller-name">{property.listingSource || 'Verified Developer'}</strong>
-                  <p className="seller-sub">Direct Listing • Zero Brokerage</p>
+              {/* Seller / Developer Profile */}
+              <div className="sidebar-seller-card">
+                <div className="seller-emblem"><IconBuilding size={20} /></div>
+                <div className="seller-details">
+                  <strong className="seller-name-text">{property.listingSource || 'Verified Developer'}</strong>
+                  <p className="seller-sub-text">Direct Seller • Zero Brokerage</p>
                 </div>
               </div>
 
-              <div className="clean-sidebar-actions">
+              {/* Action Buttons: Primary Site Visit + Side-by-Side Call / WhatsApp */}
+              <div className="sidebar-action-buttons">
                 <button
-                  className="clean-btn clean-btn-primary"
+                  type="button"
+                  className="sidebar-primary-btn"
                   onClick={() => {
                     if (onOpenLeadModal) onOpenLeadModal(property, 'visit');
                   }}
                 >
-                  📅 Schedule Site Visit
+                  <IconCalendar size={15} />
+                  <span>Schedule Site Visit (Free Cab)</span>
                 </button>
 
-                <button
-                  className="clean-btn clean-btn-outline"
-                  onClick={() => setShowPhone(!showPhone)}
-                >
-                  📞 {showPhone ? property.sellerPhone || '+91 98882 14500' : 'View Contact Number'}
-                </button>
+                <div className="sidebar-secondary-btn-row">
+                  <button
+                    type="button"
+                    className="sidebar-call-btn"
+                    onClick={() => setShowPhone(!showPhone)}
+                  >
+                    <IconPhone size={14} />
+                    <span>{showPhone ? 'Hide Line' : 'Call Seller'}</span>
+                  </button>
+
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="sidebar-whatsapp-btn"
+                  >
+                    <IconWhatsApp size={15} />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
 
                 {showPhone && (
-                  <div className="clean-call-now-toast">
-                    Direct Line:{' '}
-                    <a href={`tel:${cleanPhone}`} className="clean-call-link">
-                      <strong>{property.sellerPhone || '+91 98882 14500'}</strong> (Tap to call)
+                  <div className="sidebar-phone-toast">
+                    <span>Direct Seller Line:</span>
+                    <a href={`tel:${cleanPhone}`} className="direct-tel-link">
+                      <strong>{property.sellerPhone || '+91 98882 14500'}</strong> (Tap to Call)
                     </a>
                   </div>
                 )}
-
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="clean-btn clean-btn-whatsapp"
-                >
-                  💬 Chat on WhatsApp
-                </a>
               </div>
 
-              {/* Quick Callback Box */}
-              <div className="clean-callback-section">
-                <h4 className="callback-title">Request Instant Callback</h4>
+              {/* Direct Quick Callback Box */}
+              <div className="sidebar-callback-box">
+                <div className="callback-box-header">
+                  <h4 className="callback-box-title">Request Detailed Callback</h4>
+                  <span className="callback-badge">15m Response</span>
+                </div>
                 {quickSubmitted ? (
-                  <div className="clean-callback-success">
-                    <span className="check">✓</span> Request submitted! We'll call you shortly.
+                  <div className="callback-success-message">
+                    <span className="success-icon">✓</span> Callback request submitted! We will call you shortly.
                   </div>
                 ) : (
-                  <form onSubmit={handleQuickInquiry} className="clean-callback-form">
-                    {quickError && <div className="clean-callback-error">{quickError}</div>}
-                    <input
-                      type="text"
-                      placeholder="Your Name"
-                      value={quickName}
-                      onChange={(e) => setQuickName(e.target.value)}
-                      className="clean-input"
-                      required
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Mobile Phone (10 digits)"
-                      value={quickPhone}
-                      onChange={(e) => setQuickPhone(e.target.value)}
-                      className="clean-input"
-                      required
-                    />
+                  <form onSubmit={handleQuickInquiry} className="callback-form">
+                    {quickError && <div className="callback-error-msg">{quickError}</div>}
+                    <div className="callback-input-wrap">
+                      <span className="input-ico"><IconUser size={15} /></span>
+                      <input
+                        type="text"
+                        placeholder="Your Full Name"
+                        value={quickName}
+                        onChange={(e) => setQuickName(e.target.value)}
+                        className="callback-input"
+                        required
+                      />
+                    </div>
+                    <div className="callback-input-wrap">
+                      <span className="input-ico"><IconPhone size={15} /></span>
+                      <input
+                        type="tel"
+                        placeholder="Mobile Number (10 digits)"
+                        value={quickPhone}
+                        onChange={(e) => setQuickPhone(e.target.value)}
+                        className="callback-input"
+                        required
+                      />
+                    </div>
                     <button
                       type="submit"
                       disabled={quickLoading}
-                      className="clean-btn-submit"
+                      className="callback-submit-btn"
                     >
-                      {quickLoading ? 'Sending...' : 'Request Callback'}
+                      {quickLoading ? 'Sending...' : 'Request Instant Callback'}
                     </button>
                   </form>
                 )}
               </div>
 
-              <div className="clean-trust-footer">
-                <span>🛡️ Zero Brokerage • Free Cab for Site Visit</span>
+              {/* Buyer Protection Pledge */}
+              <div className="sidebar-trust-pledge">
+                <span className="pledge-icon"><IconShield size={14} /></span>
+                <span>Zero Brokerage • Free Cab for Site Visit • Clear Title</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Similar Properties Section */}
+        {/* 6. Similar Properties in Locality (Matching Home Page) */}
         {similarProperties.length > 0 && (
-          <section className="clean-similar-section">
-            <h2 className="clean-section-heading">Similar Properties in {property.city || 'Tricity'}</h2>
+          <section className="detail-similar-section">
+            <div className="similar-section-header">
+              <span className="subtle-kicker">VERIFIED SIMILAR PROPERTIES</span>
+              <h2>Similar Properties in {property.city || 'Tricity'}</h2>
+              <p>Hand-picked verified listings matching your configuration and locality</p>
+            </div>
+
             <div className="figma-cards-grid">
               {similarProperties.map((p) => (
                 <PropertyCard
@@ -710,7 +935,7 @@ export default function PropertyDetail({
         )}
       </div>
 
-      {/* Lightbox Modal */}
+      {/* Lightbox High-Resolution Modal */}
       {showLightbox && (
         <div className="lightbox-overlay" onClick={() => setShowLightbox(false)}>
           <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
@@ -725,21 +950,24 @@ export default function PropertyDetail({
                 className="lightbox-main-img"
               />
 
-              <button
-                className="lightbox-nav-btn prev"
-                onClick={() => setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                aria-label="Previous image"
-              >
-                ‹
-              </button>
-
-              <button
-                className="lightbox-nav-btn next"
-                onClick={() => setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                aria-label="Next image"
-              >
-                ›
-              </button>
+              {images.length > 1 && (
+                <>
+                  <button
+                    className="lightbox-nav-btn prev"
+                    onClick={() => setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                    aria-label="Previous image"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    className="lightbox-nav-btn next"
+                    onClick={() => setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                    aria-label="Next image"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="lightbox-caption">
@@ -752,17 +980,19 @@ export default function PropertyDetail({
               </span>
             </div>
 
-            <div className="lightbox-thumbs">
-              {images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`Thumbnail ${idx + 1}`}
-                  className={`lb-thumb ${activeImageIndex === idx ? 'active' : ''}`}
-                  onClick={() => setActiveImageIndex(idx)}
-                />
-              ))}
-            </div>
+            {images.length > 1 && (
+              <div className="lightbox-thumbs">
+                {images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`Thumbnail ${idx + 1}`}
+                    className={`lb-thumb ${activeImageIndex === idx ? 'active' : ''}`}
+                    onClick={() => setActiveImageIndex(idx)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

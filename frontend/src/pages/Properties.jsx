@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
 import PropertyCard from '../components/PropertyCard';
+import {
+  IconSearch,
+  IconCross,
+  IconSliders,
+  IconBuilding,
+} from '../components/DetailIcons';
 
 export default function Properties({
   properties = [],
@@ -17,6 +23,7 @@ export default function Properties({
   const [selectedType, setSelectedType] = useState(initialFilters?.type || 'All');
   const [selectedBhk, setSelectedBhk] = useState(initialFilters?.bhk || 'All');
   const [selectedPossession, setSelectedPossession] = useState('All');
+  const [selectedSource, setSelectedSource] = useState('All');
   const [sortBy, setSortBy] = useState('default');
 
   // Filter properties
@@ -55,6 +62,11 @@ export default function Properties({
       }
     }
 
+    // Source filter (Direct Owner vs Verified Developer)
+    if (selectedSource !== 'All' && item.listingSource.toLowerCase() !== selectedSource.toLowerCase()) {
+      return false;
+    }
+
     return true;
   });
 
@@ -72,25 +84,41 @@ export default function Properties({
     setSelectedType('All');
     setSelectedBhk('All');
     setSelectedPossession('All');
+    setSelectedSource('All');
     if (onCityChange) onCityChange('All Tricity');
   };
+
+  const hasActiveFilters =
+    Boolean(searchTerm) ||
+    selectedType !== 'All' ||
+    selectedBhk !== 'All' ||
+    selectedPossession !== 'All' ||
+    selectedSource !== 'All' ||
+    selectedCity !== 'All Tricity';
 
   return (
     <div className="properties-page section-container">
       {/* Page Header */}
       <div className="explore-header-row">
-        <div>
-          <span className="subtle-kicker">100% For Sale • Verified Ownership</span>
+        <div className="explore-header-text">
+          <span className="subtle-kicker">100% Verified Ownership • Direct Seller Connect</span>
           <h2>Properties in {selectedCity}</h2>
           <p className="explore-subtitle">
-            Showing <strong>{filtered.length}</strong> verified residential homes ready for inspection
+            Showing <strong>{filtered.length}</strong> verified residences with zero brokerage & transparent pricing
           </p>
         </div>
 
         <div className="explore-sort-wrap">
-          <label>Sort By:</label>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="default">Featured / Recommended</option>
+          <span className="sort-label-text">
+            <IconSliders size={14} className="sort-icon-svg" />
+            <span>Sort by:</span>
+          </span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="explore-sort-select"
+          >
+            <option value="default">Featured & Recommended</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
             <option value="area-high">Area: Largest First</option>
@@ -102,7 +130,7 @@ export default function Properties({
       <div className="property-filter-panel">
         <div className="filter-row-top">
           <div className="filter-search-box">
-            <span className="search-icon">🔍</span>
+            <IconSearch size={17} className="filter-search-icon" />
             <input
               type="text"
               placeholder="Search by Sector, Road, Builder or Landmark..."
@@ -110,7 +138,14 @@ export default function Properties({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
-              <button className="clear-search-btn" onClick={() => setSearchTerm('')}>✕</button>
+              <button
+                type="button"
+                className="clear-search-btn"
+                onClick={() => setSearchTerm('')}
+                title="Clear Search"
+              >
+                <IconCross size={13} />
+              </button>
             )}
           </div>
 
@@ -137,7 +172,7 @@ export default function Properties({
               <option value="Apartment">Apartment</option>
               <option value="Independent Floor">Builder Floor</option>
               <option value="Villa">Villa</option>
-              <option value="Residential Plot">Plot</option>
+              <option value="Residential Plot">Residential Plot</option>
             </select>
 
             <select
@@ -166,18 +201,43 @@ export default function Properties({
         {/* Quick Filter Tags */}
         <div className="active-filter-chips">
           <span className="chips-label">Quick Filters:</span>
-          {['Ready to Move', 'Direct Owner', 'Verified Developer'].map((tag) => (
-            <button
-              key={tag}
-              className="quick-chip"
-              onClick={() => setSearchTerm(tag === 'Ready to Move' ? '' : tag)}
-            >
-              {tag}
-            </button>
-          ))}
-          {(searchTerm || selectedType !== 'All' || selectedBhk !== 'All' || selectedCity !== 'All Tricity') && (
-            <button className="reset-filters-btn" onClick={resetAllFilters}>
-              Clear All Filters ✕
+
+          <button
+            type="button"
+            className={`quick-chip ${selectedPossession === 'Ready' ? 'active' : ''}`}
+            onClick={() => setSelectedPossession(prev => prev === 'Ready' ? 'All' : 'Ready')}
+          >
+            Ready to Move
+          </button>
+
+          <button
+            type="button"
+            className={`quick-chip ${selectedSource === 'Direct Owner' ? 'active' : ''}`}
+            onClick={() => setSelectedSource(prev => prev === 'Direct Owner' ? 'All' : 'Direct Owner')}
+          >
+            Direct Owner
+          </button>
+
+          <button
+            type="button"
+            className={`quick-chip ${selectedSource === 'Verified Developer' ? 'active' : ''}`}
+            onClick={() => setSelectedSource(prev => prev === 'Verified Developer' ? 'All' : 'Verified Developer')}
+          >
+            Verified Developer
+          </button>
+
+          <button
+            type="button"
+            className={`quick-chip ${selectedType === 'Villa' ? 'active' : ''}`}
+            onClick={() => setSelectedType(prev => prev === 'Villa' ? 'All' : 'Villa')}
+          >
+            Luxury Villas
+          </button>
+
+          {hasActiveFilters && (
+            <button type="button" className="reset-filters-btn" onClick={resetAllFilters}>
+              <IconCross size={12} className="reset-icon-svg" />
+              <span>Clear All Filters</span>
             </button>
           )}
         </div>
@@ -186,7 +246,9 @@ export default function Properties({
       {/* Grid of Results */}
       {filtered.length === 0 ? (
         <div className="empty-results-box">
-          <div className="empty-icon">🏠</div>
+          <div className="empty-icon-wrap">
+            <IconBuilding size={40} className="empty-icon-svg" />
+          </div>
           <h3>No Properties Matched Your Criteria</h3>
           <p>Try resetting filters or changing the locality to discover more options across Tricity.</p>
           <button className="reset-action-btn" onClick={resetAllFilters}>

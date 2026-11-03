@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropertyCard from '../components/PropertyCard';
+import { IconMapPin } from '../components/DetailIcons';
 
 export default function Home({
   properties = [],
@@ -131,7 +132,10 @@ export default function Home({
               <div className="banner-project-title-block">
                 <h3 className="banner-project-name">{currentBanner.name}</h3>
                 <span className="banner-project-sub">{currentBanner.subname}</span>
-                <p className="banner-project-loc">📍 {currentBanner.location}</p>
+                <p className="banner-project-loc">
+                  <IconMapPin size={13} className="banner-loc-icon" />
+                  <span>{currentBanner.location}</span>
+                </p>
               </div>
 
               <div className="banner-life-tagline">
